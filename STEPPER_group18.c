@@ -56,7 +56,7 @@ void initAtoD(void) // Initialize A/D
 void main (void)
 {	
 	//init
-	//PORTB = 0B00000000; // Clear Port B output latches
+	//PORTB = 0B00000000; // Clear Port B output latches???
 	TRISB = 0B00001111; // Configure Port B pin 0~3 as outputs,pin 4~7 as inputs
 	
 	TRISC = 0B11111111;	// Configure Port C as all input
@@ -75,7 +75,9 @@ void main (void)
 			
 			while(GO == 1){} // Wait here until A/D conversion is done
 			while(GO == 1){} // Make sure A/D has finished
-			State = ADRESH; // 
+			State = ADRESH; // put the value of the octal switch in the variable "State"
+			//State = A2D()
+			Select();
 			Swith(State)
 			{
 				case(0):
@@ -104,27 +106,43 @@ void main (void)
 
 void Mode1(void)
 {
+	Count=0;
+	PORTB=000000001;//make the LEDs show mode 1???
+	
 	Synchronize()
-	if (redButton == 1)
+	
+	while(1 != 2)
 	{
-		RealCount = Count%4;//get the remainder of Count/4
-		if(RealCount == 0)
+		if (redButton == 1)
 		{
-			UNI(0,24);	//The first time the red button pressed, the unipolar stepper will rotate 90 degree 
+			Count++;
+			RealCount = Count%4;//get the remainder of Count/4
+			if(RealCount == 0)
+			{
+				UNI(0,24);	//the unipolar motor will move counterclockwise (the shortest path) to the vertical interrupter and stop
+			}
+			if(RealCount == 1)
+			{
+				BI(1,25);	//the bipolar motor will move clockwise (the shortest path) to the vertical interrupter and stop
+			}
+			if(RealCount == 2)
+			{
+				UNI(1,24);	// the unipolar motor will move clockwise to the horizontal interrupter and stop
+			}
+			if(RealCount == 3)
+			{
+				BI(0,25);	//the bipolar motor will move counterclockwise to the horizontal interrupter and stop
+			}
 		}
-		if(RealCount == 1)
+		if(greenButton == 1)
 		{
-			BI(1,25);
-		}
-		if(RealCount == 2)
-		{
-			UNI(1,24);
-		}
-		if(RealCount == 3)
-		{
-			BI(0,25);
-		}
+			
+			
+		
+		
 	}
+	
+	
 		
 	
 	
@@ -137,19 +155,19 @@ void Mode1(void)
 
 void Mode2(void)
 {
-	
+	PORTB=000000010;
 	
 } 
 
 void Mode3(void)
 {
-	
+	PORTB=000000011;
 	
 } 
 
 void Mode4(void)
 {
-	
+	PORTB=000000100;
 	
 } 
 
@@ -157,6 +175,24 @@ void Synchronize(void)
 {
 	
 }
+
+void Select(void)
+{
+	
+	
+}
+
+
+
+
+int A2D(void)
+{
+	while(GO == 1){} // Wait here until A/D conversion is done
+	while(GO == 1){} // Make sure A/D has finished
+	return ADRESH;
+}
+
+
 
 void Error(State)
 {
