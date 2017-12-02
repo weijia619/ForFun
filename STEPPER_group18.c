@@ -55,7 +55,7 @@ void initAtoD(void) // Initialize A/D
 
 void main (void)
 {	
-	//init
+	//init???
 	//PORTB = 0B00000000; // Clear Port B output latches???
 	TRISB = 0B00001111; // Configure Port B pin 0~3 as outputs,pin 4~7 as inputs
 	
@@ -63,6 +63,8 @@ void main (void)
 	
 	PORTD = 0B00000000; // Clear Port D output latches
 	TRISD = 0B00000000; // Configure Port D as all output
+	
+	int Count,RealCount;
 	
 	initAtoD;// Initialize A/D
 	
@@ -121,12 +123,13 @@ void Mode1(void)
 			
 			Count++;
 			RealCount = Count%4;//get the remainder of Count/4
+			
 			if(RealCount == 0)
 			{
 				while(PORTB,5 != 1)
 				{
 					UNI(0,1);	//the unipolar motor will move counterclockwise (the shortest path) to the vertical interrupter and stop
-					delay(30);	//need more than 30 msec between steps to keep synchronization.
+					//delay(30);	//need more than 30 msec between steps to keep synchronization.
 				}
 				//UNI(0,24);
 			}
@@ -136,7 +139,7 @@ void Mode1(void)
 				while(PORTB,6 != 1)
 				{
 					BI(1,1);	//the bipolar motor will move clockwise (the shortest path) to the vertical interrupter and stop
-					delay(30);	//need more than 30 msec between steps to keep synchronization.
+					//delay(30);	//need more than 30 msec between steps to keep synchronization.
 				}
 				//BI(1,25);
 			}
@@ -146,7 +149,7 @@ void Mode1(void)
 				while(PORTB,4 != 1)
 				{
 					UNI(1,1);	// the unipolar motor will move clockwise to the horizontal interrupter and stop
-					delay(30);	//need more than 30 msec between steps to keep synchronization.
+					//delay(30);	//need more than 30 msec between steps to keep synchronization.
 				}
 				//UNI(1,24);
 			}
@@ -156,7 +159,7 @@ void Mode1(void)
 				while(PORTB,7 != 1)
 				{
 					BI(0,1);	//the bipolar motor will move counterclockwise to the horizontal interrupter and stop
-					delay(30);	//need more than 30 msec between steps to keep synchronization.
+					//delay(30);	//need more than 30 msec between steps to keep synchronization.
 				}
 				//BI(0,25);
 			}
@@ -177,9 +180,55 @@ void Mode1(void)
 void Mode2(void)
 {
 	PORTB=000000010;
-	
+
 	Synchronize();
 	
+	while(1 != 2)
+	{
+		if(redButton == 1)
+		{
+			while(redButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+		
+			BI(1,1);// make a step of the bipolar motor before moving the unipolar
+		
+			while(PORTB,4&&PORTB,7 == 0)
+			{
+				if(PORTB,4 == 0)
+				{
+					UNI(1,1);
+				}
+				if(PORTB,7 == 0)
+				{
+					BI(0,1);
+				}
+			}
+			
+			
+			while(PORTB,5&&PORTB,6 == 0)
+			{
+				if(PORTB,5 == 0)
+				{
+					UNI(0,1);
+				}
+				if(PORTB,6 == 0)
+				{
+					BI(1,1);
+				}
+			}	
+		}
+		
+		if(greenButton == 1)
+		{
+			while(greenButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+				
+			State = A2D();
+			Select(State);
+			
+		}	
+
+	}
 	
 	
 	
@@ -189,7 +238,63 @@ void Mode2(void)
 void Mode3(void)
 {
 	PORTB=000000011;
-	Synchronize();
+	//Synchronize();
+	
+	while(PORTB,5 != 1)
+	{
+		UNI(1,1);
+	}//The unipolar motor starts at the vertical interrupter position
+	while(PORTB,6 != 1)
+	{
+		BI(1,1);
+	}//The bipolar motor starts at the horizontal interrupter position. 
+	
+	while(1 != 2)
+	{
+		if(redButton == 1)
+		{
+			while(redButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+		
+			BI(0,3);// make 3 steps of the bipolar motor before moving the unipolar
+		
+			while(PORTB,4&&PORTB,7 == 0)
+			{
+				if(PORTB,4 == 0)
+				{
+					UNI(0,1);
+				}
+				if(PORTB,7 == 0)
+				{
+					BI(0,1);
+				}
+			}
+			
+			
+			while(PORTB,5&&PORTB,6 == 0)
+			{
+				if(PORTB,5 == 0)
+				{
+					UNI(1,1);
+				}
+				if(PORTB,6 == 0)
+				{
+					BI(1,1);
+				}
+			}	
+		}
+		
+		if(greenButton == 1)
+		{
+			while(greenButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+				
+			State = A2D();
+			Select(State);
+			
+		}	
+
+	}	
 } 
 
 void Mode4(void)
@@ -200,7 +305,17 @@ void Mode4(void)
 
 void Synchronize(void)
 {
-	
+	while (PORTB,4&&PORTB,7 == 0)
+	{
+		if(PORTB,4 == 0)
+		{
+			UNI(1,1);
+		}
+		if(PORTB,7 == 0)
+		{
+			BI(1,1);
+		}
+	}
 }
 
 void Select(void)
@@ -228,11 +343,18 @@ void Select(void)
 void UNI(UniDir,UniSteps)
 {
 	//leftshift
+	//delay(30) every step
 }
 void BI(BiDir,BiSteps)
 {
 }
 
+void UNIwave()
+{
+}
+void BIwave()
+{
+}
 
 int A2D(void)
 {
@@ -240,8 +362,6 @@ int A2D(void)
 	while(GO == 1){} // Make sure A/D has finished
 	return ADRESH;
 }
-
-
 
 void Error(State)
 {
