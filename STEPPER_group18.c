@@ -64,7 +64,7 @@ void main (void)
 	PORTD = 0B00000000; // Clear Port D output latches
 	TRISD = 0B00000000; // Configure Port D as all output
 	
-	initAtoD;
+	initAtoD;// Initialize A/D
 	
 	while(1 != 2) // Infinite loop
 	{
@@ -91,7 +91,7 @@ void main (void)
 					Mode4();
 					break;
 				default:
-					Error();
+					Error(State);
 				}
 			
 		}
@@ -102,4 +102,66 @@ void main (void)
 	
 }
 
-void 	
+void Mode1(void)
+{
+	Synchronize()
+	if (redButton == 1)
+	{
+		RealCount = Count%4;//get the remainder of Count/4
+		if(RealCount == 0)
+		{
+			UNI(0,24);	//The first time the red button pressed, the unipolar stepper will rotate 90 degree 
+		}
+		if(RealCount == 1)
+		{
+			BI(1,25);
+		}
+		if(RealCount == 2)
+		{
+			UNI(1,24);
+		}
+		if(RealCount == 3)
+		{
+			BI(0,25);
+		}
+	}
+		
+	
+	
+	
+	
+	
+	
+	
+} 	
+
+void Mode2(void)
+{
+	
+	
+} 
+
+void Mode3(void)
+{
+	
+	
+} 
+
+void Mode4(void)
+{
+	
+	
+} 
+
+void Synchronize(void)
+{
+	
+}
+
+void Error(State)
+{
+	PORTB,0 = State,0; 
+	PORTB,1 = State,1;  
+	PORTB,2 = State,2;  //nake the last 3 three pins of PORTB show the mode we chose
+	PORTB,2 = 1;		//light the third LED for the fault
+}
