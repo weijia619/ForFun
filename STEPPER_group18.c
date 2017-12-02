@@ -77,8 +77,8 @@ void main (void)
 			while(GO == 1){} // Make sure A/D has finished
 			State = ADRESH; // put the value of the octal switch in the variable "State"
 			//State = A2D()
-			Select();
-			Swith(State)
+			Select(State);
+			/*Swith(State)
 			{
 				case(0):
 					Mode1();
@@ -94,7 +94,7 @@ void main (void)
 					break;
 				default:
 					Error(State);
-				}
+				}*/
 			
 		}
 			
@@ -106,69 +106,96 @@ void main (void)
 
 void Mode1(void)
 {
-	Count=0;
 	PORTB=000000001;//make the LEDs show mode 1???
 	
 	Synchronize()
+	
+	Count=0;
 	
 	while(1 != 2)
 	{
 		if (redButton == 1)
 		{
+			while(redButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+			
 			Count++;
 			RealCount = Count%4;//get the remainder of Count/4
 			if(RealCount == 0)
 			{
-				UNI(0,24);	//the unipolar motor will move counterclockwise (the shortest path) to the vertical interrupter and stop
+				while(PORTB,5 != 1)
+				{
+					UNI(0,1);	//the unipolar motor will move counterclockwise (the shortest path) to the vertical interrupter and stop
+					delay(30);	//need more than 30 msec between steps to keep synchronization.
+				}
+				//UNI(0,24);
 			}
+			
 			if(RealCount == 1)
 			{
-				BI(1,25);	//the bipolar motor will move clockwise (the shortest path) to the vertical interrupter and stop
+				while(PORTB,6 != 1)
+				{
+					BI(1,1);	//the bipolar motor will move clockwise (the shortest path) to the vertical interrupter and stop
+					delay(30);	//need more than 30 msec between steps to keep synchronization.
+				}
+				//BI(1,25);
 			}
+			
 			if(RealCount == 2)
 			{
-				UNI(1,24);	// the unipolar motor will move clockwise to the horizontal interrupter and stop
+				while(PORTB,4 != 1)
+				{
+					UNI(1,1);	// the unipolar motor will move clockwise to the horizontal interrupter and stop
+					delay(30);	//need more than 30 msec between steps to keep synchronization.
+				}
+				//UNI(1,24);
 			}
+			
 			if(RealCount == 3)
 			{
-				BI(0,25);	//the bipolar motor will move counterclockwise to the horizontal interrupter and stop
+				while(PORTB,7 != 1)
+				{
+					BI(0,1);	//the bipolar motor will move counterclockwise to the horizontal interrupter and stop
+					delay(30);	//need more than 30 msec between steps to keep synchronization.
+				}
+				//BI(0,25);
 			}
+			
 		}
 		if(greenButton == 1)
 		{
+			while(greenButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
 			
+			State = A2D();
+			Select(State);
 			
-		
-		
-	}
-	
-	
-		
-	
-	
-	
-	
-	
-	
-	
-} 	
+		}
+	} 
+}	
 
 void Mode2(void)
 {
 	PORTB=000000010;
+	
+	Synchronize();
+	
+	
+	
+	
 	
 } 
 
 void Mode3(void)
 {
 	PORTB=000000011;
-	
+	Synchronize();
 } 
 
 void Mode4(void)
 {
 	PORTB=000000100;
-	
+	Synchronize();
 } 
 
 void Synchronize(void)
@@ -178,11 +205,33 @@ void Synchronize(void)
 
 void Select(void)
 {
-	
+	Swith(State)
+			{
+				case(0):
+					Mode1();
+					break;
+				case(2)
+					Mode2();
+					break;
+				case(2):
+					Mode3();
+					break;
+				case(3):
+					Mode4();
+					break;
+				default:
+					Error(State);
 	
 }
 
 
+void UNI(UniDir,UniSteps)
+{
+	//leftshift
+}
+void BI(BiDir,BiSteps)
+{
+}
 
 
 int A2D(void)
@@ -200,4 +249,5 @@ void Error(State)
 	PORTB,1 = State,1;  
 	PORTB,2 = State,2;  //nake the last 3 three pins of PORTB show the mode we chose
 	PORTB,2 = 1;		//light the third LED for the fault
+	while(1 != 2){};	//wait for the reset button pressed
 }
