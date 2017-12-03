@@ -94,9 +94,9 @@ void main (void)
 void Mode1(void)
 {
 	int Count,RealCount;
-	PORTB=0B000000001;//make the LEDs show mode 1???
+	PORTB=0B00000001;//make the LEDs show mode 1???
 	
-	Both2HorizontalUniCWBiCCW();//make the both motors to the horizontal position
+	Both2H_UniCWBiCCW();//make the both motors to the horizontal position
 	
 	Count=0;
 		
@@ -139,9 +139,9 @@ void Mode1(void)
 
 void Mode2(void)
 {
-	PORTB=0B000000010;
+	PORTB=0B00000010;
 
-	Both2HorizontalUniCWBiCCW();//make the both motors to the horizontal position
+	Both2H_UniCWBiCCW();//make the both motors to the horizontal position
 	
 	while(GreenButton != 1)	//stay in mode 2 until the green button is pressed.
 	{
@@ -151,11 +151,12 @@ void Mode2(void)
 			SwitchDelay(); // Let switch debounce
 		
 			// make a step of the bipolar motor before moving the unipolar
-			PORTD=0B01000000;
-			delay(30);
-		
-			Both2VerticalUniCCWBiCW();	//make the both motors to the vertical position
-			Both2HorizontalUniCWBiCCW();//make the both motors to the horizontal position
+			//PORTD=0B01000000;
+			//delay(30);
+			
+			Both2V_UniCWBiCCW();	//make the both motors to the vertical position
+	
+			Both2H_UniCWBiCCW();	//make the both motors to the horizontal position
 			
 			//if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
 			if(redButton == 1)
@@ -163,105 +164,64 @@ void Mode2(void)
 				while(redButton == 1){} // Wait for release
 				SwitchDelay(); // Let switch debounce
 			}				
-	
 		}				
 	}	
 } 
 
 void Mode3(void)
 {
-	PORTB=0B000000011;//make the LEDs show mode 3
-	Uni2VerticalBi2Horizontal();//make the unipolar stepper to the vertical position and the bipolar stepper to the horizontal position.
+	PORTB=0B00000011;//make the LEDs show mode 3
+	Uni2VBi2H_UniCWBiCW();//make the unipolar stepper to the vertical position and the bipolar stepper to the horizontal position.	
 	
-	while(PORTB,5 != 1)
-	{
-		UNI(1,1);
-	}//The unipolar motor starts at the vertical interrupter position
-	while(PORTB,6 != 1)
-	{
-		BI(1,1);
-	}//The bipolar motor starts at the horizontal interrupter position. 
-	
-	while(1 != 2)
+	while(GreenButton != 1)
 	{
 		if(redButton == 1)
 		{
 			while(redButton == 1){} // Wait for release
 			SwitchDelay(); // Let switch debounce
-		
-			BI(0,3);// make 3 steps of the bipolar motor before moving the unipolar
-		
-			while(PORTB,4&&PORTB,7 == 0)
-			{
-				if(PORTB,4 == 0)
-				{
-					UNI(0,1);
-				}
-				if(PORTB,7 == 0)
-				{
-					BI(0,1);
-				}
-			}
+					
+			Uni2HBi2V_UniCCWBiCCW();
 			
+			Uni2VBi2H_UniCWBiCW();
 			
-			while(PORTB,5&&PORTB,6 == 0)
+			//if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
+			if(redButton == 1)
 			{
-				if(PORTB,5 == 0)
-				{
-					UNI(1,1);
-				}
-				if(PORTB,6 == 0)
-				{
-					BI(1,1);
-				}
-			}	
+				while(redButton == 1){} // Wait for release
+				SwitchDelay(); // Let switch debounce
+			}		
 		}
-		
-		if(greenButton == 1)
-		{
-			while(greenButton == 1){} // Wait for release
-			SwitchDelay(); // Let switch debounce
-				
-			State = A2D();
-			Select(State);
-			
-		}	
-
 	}	
 } 
 
 void Mode4(void)
 {
-	PORTB=000000100;
-	Both2HorizontalUniCWBiCCW();//make the both motors to the horizontal position
+	PORTB=0B00000100;
+
+	Both2H_UniCWBiCCW();//make the both motors to the horizontal position
+	
+	while(GreenButton != 1)	//stay in mode 2 until the green button is pressed.
+	{
+		if(redButton == 1)
+		{
+			while(redButton == 1){} // Wait for release
+			SwitchDelay(); // Let switch debounce
+
+			Both2V_UniCWBiCCW_wave();	//make the both motors to the vertical position by wave drive
+	
+			Both2H_UniCWBiCCW_wave();	//make the both motors to the horizontal position by wave drive
+			
+			//if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
+			if(redButton == 1)
+			{
+				while(redButton == 1){} // Wait for release
+				SwitchDelay(); // Let switch debounce
+			}				
+		}				
+	}	
 } 
 
-void Both2HorizontalUniCWBiCCW(void)
-{
-	while (UniH&&BiH == 0)
-	{
-		if(UniH == 0){UniCW();}		
-		if(BiH == 0){BiCCW();}
-	}
-}
 
-void Both2VerticalUniCCWBiCW(void)
-{
-	while (UniV&&BiV == 0)
-	{
-		if(UniV == 0){UniCCW();}		
-		if(BiV == 0){BiCW();}
-	}
-}
-
-void Uni2VerticalBi2Horizontal(void)
-{
-	while(UniV&&BiH == 0)
-	{
-		if(UniV == 0){UniCW();}		
-		if(BiH == 0){BiCW();}
-	}
-}
 
 void Select(void)
 {
@@ -280,8 +240,7 @@ void Select(void)
 					Mode4();
 					break;
 				default:
-					Error(State);
-	
+					Error(State);	
 }
 
 void UniCW(void)
@@ -294,7 +253,6 @@ void UniCW(void)
 	delay(30);
 	PORTD=0B00001001;
 	delay(30);
-	return;
 }
 
 void UniCCW(void)
@@ -307,7 +265,6 @@ void UniCCW(void)
 	delay(30);
 	PORTD=0B00000011;
 	delay(30);
-	return;
 }
 
 void BiCW(void)
@@ -320,7 +277,6 @@ void BiCW(void)
 	delay(30);
 	PORTD=0B01000000;
 	delay(30);
-	return;
 }
 
 void BiCCW(void)
@@ -333,7 +289,6 @@ void BiCCW(void)
 	delay(30);
 	PORTD=0B00000000;
 	delay(30);
-	return;
 }
 
 void UniCWBiCW(void)
@@ -346,7 +301,6 @@ void UniCWBiCW(void)
 	delay(30);
 	PORTD=0B01001001;
 	delay(30);
-	return;
 }
 
 void UniCCWBiCCW(void)
@@ -359,7 +313,6 @@ void UniCCWBiCCW(void)
 	delay(30);
 	PORTD=0B00000011;
 	delay(30);
-	return;	
 }
 
 void UniCWBiCCW(void)
@@ -372,7 +325,6 @@ void UniCWBiCCW(void)
 	delay(30);
 	PORTD=0B00001001;
 	delay(30);
-	return;
 }
 
 void UniCCWBiCW(void)
@@ -385,18 +337,111 @@ void UniCCWBiCW(void)
 	delay(30);
 	PORTD=0B01000011;
 	delay(30);
-	return;
 }
 
-void UNIwave()
+void UniCW_wave(void)
 {
-	
-}
-void BIwave()
-{
-	
+	PORTD=0B00000001;
+	delay(30);
+	PORTD=0B00000010;
+	delay(30);
+	PORTD=0B00000100;
+	delay(30);
+	PORTD=0B00001000;
+	delay(30);
 }
 
+void BiCW_wave(void)
+{
+	PORTD=0B11000000;
+	delay(30);
+	PORTD=0B00110000;
+	delay(30);
+	PORTD=0B10010000;
+	delay(30);
+	PORTD=0B01100000;
+	delay(30);
+}
+
+void UniCCW_wave(void)
+{
+	PORTD=0B00001000;
+	delay(30);
+	PORTD=0B00000100;
+	delay(30);
+	PORTD=0B00000010;
+	delay(30);
+	PORTD=0B00000001;
+	delay(30);
+}
+
+void BiCCW_wave(void)
+{
+	PORTD=0B01100000;
+	delay(30);
+	PORTD=0B10010000;
+	delay(30);
+	PORTD=0B00110000;
+	delay(30);
+	PORTD=0B11000000;
+	delay(30);
+}
+
+
+void Both2H_UniCWBiCCW_wave(void)
+{
+	while (UniH&&BiH == 0)
+	{
+		if(UniH == 0){UniCW_wave();}		
+		if(BiH == 0){BiCCW_wave();}
+	}
+}
+
+void Both2V_UniCWBiCCW_wave(void)
+{
+	while (UniV&&BiV == 0)
+	{
+		if(UniV == 0){UniCCW_wave();}		
+		if(BiV == 0){BiCW_wave();}
+	}
+}
+
+
+void Both2H_UniCWBiCCW(void)
+{
+	while (UniH&&BiH == 0)
+	{
+		if(UniH == 0){UniCW();}		
+		if(BiH == 0){BiCCW();}
+	}
+}
+
+void Both2V_UniCCWBiCW(void)
+{
+	while (UniV&&BiV == 0)
+	{
+		if(UniV == 0){UniCCW();}		
+		if(BiV == 0){BiCW();}
+	}
+}
+
+void Uni2VBi2H_UniCWBiCW(void)
+{
+	while(UniV&&BiH == 0)
+	{
+		if(UniV == 0){UniCW();}		
+		if(BiH == 0){BiCW();}
+	}
+}
+
+void Uni2HBi2V_UniCCWBiCCW(void)
+{
+	while(UniH&&BiV == 0)
+	{
+		if(UniH == 0){UniCCW();}		
+		if(BiV == 0){BiCCW();}
+	}
+}
 char A2D(void)
 {
 	while(GO == 1){} // Wait here until A/D conversion is done
