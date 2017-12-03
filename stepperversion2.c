@@ -1,4 +1,14 @@
+#include <xc.h>
+#include <pic.h>
+	#pragma config FOSC=HS, CP=OFF, DEBUG=OFF, BORV=20, BOREN=0, MCLRE=ON, PWRTE=ON, WDTE=OFF
+	#pragma config BORSEN=OFF, IESO=OFF, FCMEN=0
+/* Note: the format for the CONFIG directive starts with a double underscore.
+The above directive sets the oscillator to an external high speed clock,
+sets the watchdog timer off, sets the power up timer on, sets the system
+clear on (which enables the reset pin) and turns code protect off. */
+
 /**************************************************************
+
 Case Study 5
 
 1.PORTB
@@ -23,15 +33,14 @@ pin 7:Ib(output)
 
 4.PORTE:
 octal switch(input)
+
 **************************************************************/
-#include <xc.h>
-#include <pic.h>
-	#pragma config FOSC=HS, CP=OFF, DEBUG=OFF, BORV=20, BOREN=0, MCLRE=ON, PWRTE=ON, WDTE=OFF
-	#pragma config BORSEN=OFF, IESO=OFF, FCMEN=0
-/* Note: the format for the CONFIG directive starts with a double underscore.
-The above directive sets the oscillator to an external high speed clock,
-sets the watchdog timer off, sets the power up timer on, sets the system
-clear on (which enables the reset pin) and turns code protect off. */
+
+/* Variable declarations */
+#define PORTBIT(adr,bit) ((unsigned)(&adr)*8+(bit))
+// The function PORTBIT is used to give a name to a bit on a port
+// The variable RC0 could have equally been used
+
 	static bit greenButton @ PORTBIT(PORTC,0);
 	static bit redButton @ PORTBIT(PORTC,1);
 	static bit UniH @ PORTBIT(PORTB,4); //the horizontal interrupter of the unipolar stepper
@@ -42,26 +51,55 @@ clear on (which enables the reset pin) and turns code protect off. */
 	
 	char  i,Temp; // Variable for delay loop	
 	char State = 0B00000000; //State is a variable for holding the state of the program
+/*********mode*******/	
+
+	void Select(void);
+	void Mode1(void);
+	void Mode2(void);
+	void Mode3(void);
+	void Mode4(void);
 	
-void SwitchDelay (void) 	// Waits for switch debounce
-{
-	for (i=200; i > 0; i--) {} 	// 1200 us delay
-}
+/********A2D*********/	
 
+	void initAtoD(void);
+	char A2D(void);
+	void SetupDelay(void);
+	
+/*******functions about the motors********/
 
-void SetupDelay(void) // Delay loop
-{
-	for (Temp=1; Temp > 0; Temp--) {} // 17 us delay
-}
+	void UniCW(void)
+	void UniCCW(void)
+	void BiCW(void)
+	void BiCCW(void)
+	
+	void UniCWBiCW(void)
+	void UniCCWBiCCW(void)
+	void UniCWBiCCW(void)
+	void UniCCWBiCW(void)
+	
+	void Both2H_UniCWBiCCW(void)
+	void Both2V_UniCCWBiCW(void)
+	void Uni2VBi2H_UniCWBiCW(void)
+	void Uni2HBi2V_UniCCWBiCCW(void)
+	
+	void UniCW_wave(void)
+	void BiCW_wave(void)
+	void UniCCW_wave(void)
+	void BiCCW_wave(void)
+	
+	void Both2H_UniCWBiCCW_wave(void)
+	void Both2V_UniCWBiCCW_wave(void)
+	
 
-void initAtoD(void) // Initialize A/D
-{
-	ADCON1 = 0b00000100; // RA0,RA1,RA3 analog inputs, rest digital
-	ADCON0 = 0b01000001; // Select 8* oscillator, analog input 0, turn on
-	SetupDelay(); 		 // Delay a bit before starting A/D conversion
-	GO = 1;				 // Start A/D
-}
-
+	
+/*******************************************/
+	void SwitchDelay(void);
+	
+	void Error(State);
+	
+/*************************************************/
+/********************** MAIN *********************/
+/*************************************************/
 void main (void)
 {	
 	//init???about reset
@@ -90,6 +128,10 @@ void main (void)
 		}			
 	}	
 }
+
+/*************************************************/
+/********************  MODE 1  *******************/
+/*************************************************/
 
 void Mode1(void)
 {
@@ -137,6 +179,10 @@ void Mode1(void)
 	}	
 }	
 
+/*************************************************/
+/********************  MODE 2  *******************/
+/*************************************************/
+
 void Mode2(void)
 {
 	PORTB=0B00000010;
@@ -168,6 +214,10 @@ void Mode2(void)
 	}	
 } 
 
+/*************************************************/
+/********************  MODE 3  *******************/
+/*************************************************/
+
 void Mode3(void)
 {
 	PORTB=0B00000011;//make the LEDs show mode 3
@@ -194,6 +244,9 @@ void Mode3(void)
 	}	
 } 
 
+/*************************************************/
+/********************  MODE 4  *******************/
+/*************************************************/
 void Mode4(void)
 {
 	PORTB=0B00000100;
@@ -339,6 +392,42 @@ void UniCCWBiCW(void)
 	delay(30);
 }
 
+void Both2H_UniCWBiCCW(void)
+{
+	while (UniH&&BiH == 0)
+	{
+		if(UniH == 0){UniCW();}		
+		if(BiH == 0){BiCCW();}
+	}
+}
+
+void Both2V_UniCCWBiCW(void)
+{
+	while (UniV&&BiV == 0)
+	{
+		if(UniV == 0){UniCCW();}		
+		if(BiV == 0){BiCW();}
+	}
+}
+
+void Uni2VBi2H_UniCWBiCW(void)
+{
+	while(UniV&&BiH == 0)
+	{
+		if(UniV == 0){UniCW();}		
+		if(BiH == 0){BiCW();}
+	}
+}
+
+void Uni2HBi2V_UniCCWBiCCW(void)
+{
+	while(UniH&&BiV == 0)
+	{
+		if(UniH == 0){UniCCW();}		
+		if(BiV == 0){BiCCW();}
+	}
+}
+
 void UniCW_wave(void)
 {
 	PORTD=0B00000001;
@@ -406,42 +495,24 @@ void Both2V_UniCWBiCCW_wave(void)
 	}
 }
 
-
-void Both2H_UniCWBiCCW(void)
+void SwitchDelay (void) 	// Waits for switch debounce
 {
-	while (UniH&&BiH == 0)
-	{
-		if(UniH == 0){UniCW();}		
-		if(BiH == 0){BiCCW();}
-	}
+	for (i=200; i > 0; i--) {} 	// 1200 us delay
 }
 
-void Both2V_UniCCWBiCW(void)
+void SetupDelay(void) // Delay loop
 {
-	while (UniV&&BiV == 0)
-	{
-		if(UniV == 0){UniCCW();}		
-		if(BiV == 0){BiCW();}
-	}
+	for (Temp=1; Temp > 0; Temp--) {} // 17 us delay
 }
 
-void Uni2VBi2H_UniCWBiCW(void)
+void initAtoD(void) // Initialize A/D
 {
-	while(UniV&&BiH == 0)
-	{
-		if(UniV == 0){UniCW();}		
-		if(BiH == 0){BiCW();}
-	}
+	ADCON1 = 0b00000100; // RA0,RA1,RA3 analog inputs, rest digital
+	ADCON0 = 0b01000001; // Select 8* oscillator, analog input 0, turn on
+	SetupDelay(); 		 // Delay a bit before starting A/D conversion
+	GO = 1;				 // Start A/D
 }
 
-void Uni2HBi2V_UniCCWBiCCW(void)
-{
-	while(UniH&&BiV == 0)
-	{
-		if(UniH == 0){UniCCW();}		
-		if(BiV == 0){BiCCW();}
-	}
-}
 char A2D(void)
 {
 	while(GO == 1){} // Wait here until A/D conversion is done
