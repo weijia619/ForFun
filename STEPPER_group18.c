@@ -1,4 +1,6 @@
-/*
+/**************************************************************
+Case Study 5
+
 1.PORTB
 pin 0~pin 2:display the State(output)
 pin 3: fault(output)
@@ -21,13 +23,15 @@ pin 7:Ib(output)
 
 4.PORTE:
 octal switch(input)
-*/
-
+**************************************************************/
 #include <xc.h>
 #include <pic.h>
 	#pragma config FOSC=HS, CP=OFF, DEBUG=OFF, BORV=20, BOREN=0, MCLRE=ON, PWRTE=ON, WDTE=OFF
 	#pragma config BORSEN=OFF, IESO=OFF, FCMEN=0
-
+/* Note: the format for the CONFIG directive starts with a double underscore.
+The above directive sets the oscillator to an external high speed clock,
+sets the watchdog timer off, sets the power up timer on, sets the system
+clear on (which enables the reset pin) and turns code protect off. */
 	static bit greenButton @ PORTBIT(PORTC,0);
 	static bit redButton @ PORTBIT(PORTC,1);
 	
@@ -85,7 +89,7 @@ void main (void)
 				case(0):
 					Mode1();
 					break;
-				case(2)
+				case(1)
 					Mode2();
 					break;
 				case(2):
@@ -325,7 +329,7 @@ void Select(void)
 				case(0):
 					Mode1();
 					break;
-				case(2)
+				case(1)
 					Mode2();
 					break;
 				case(2):
