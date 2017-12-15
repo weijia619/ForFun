@@ -38,10 +38,10 @@ octal switch(input)
 // The variable RC0 could have equally been used
  static bit greenButton @ PORTBIT(PORTC,0);
  static bit redButton @ PORTBIT(PORTC,1);
- static bit UniH @ PORTBIT(PORTB,4); //the horizontal interrupter of the unipolar stepper
- static bit UniV @ PORTBIT(PORTB,5); //the vertical interrupter of the unipolar stepper
- static bit BiV  @ PORTBIT(PORTB,6); //the vertical interrupter of the bipolar stepper
- static bit BiH @ PORTBIT(PORTB,7); //the horizontal interrupter of the bipolar stepper
+ static bit UniH @ PORTBIT(PORTC,4); //the horizontal interrupter of the unipolar stepper
+ static bit UniV @ PORTBIT(PORTC,5); //the vertical interrupter of the unipolar stepper
+ static bit BiV  @ PORTBIT(PORTC,6); //the vertical interrupter of the bipolar stepper
+ static bit BiH @ PORTBIT(PORTC,7); //the horizontal interrupter of the bipolar stepper
  
  
  char  i,Temp; // Variable for delay loop 
@@ -53,10 +53,10 @@ octal switch(input)
  void Mode3(void);
  void Mode4(void);
  
-/********A2D*********/ 
- void initAtoD(void);
+/********A2D*********/
+ /*void initAtoD(void);
  char A2D(void);
- void SetupDelay(void);
+ void SetupDelay(void);*/
  
 /*******functions about the motors********/
  void UniCW(void);
@@ -95,18 +95,20 @@ void main (void)
 { 
  //init???about reset
  PORTB = 0B00000000; // Set PORTB low
- TRISB = 0B00001111; // Configure Port B pin 0~3 as outputs,pin 4~7 as inputs
+ TRISB = 0B11110000; // Configure Port B pin 0~3 as outputs,pin 4~7 as inputs
  
  PORTC = 0B00000000; // Set PORTC low
- TRISC = 0B11111111; // Configure Port C as all input???
+ TRISC = 0B11110011; // Configure Port C as all input???
  
  PORTD = 0B00000000; // Set PORTD low
  TRISD = 0B00000000; // Configure Port D as all output
  
  PORTE = 0B00000000; // Set PORTE low
- TRISE = 0B00001111; // Configure Port E as all inputs
+ TRISE = 0B00000111; // Configure Port E as all inputs
  
- initAtoD;// Initialize A/D
+ ADCON1= 0B00001010;
+ 
+
  
  while(1) // Infinite loop
  {
@@ -115,7 +117,7 @@ void main (void)
    while(greenButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
    State = ~PORTE;
-State=State&0B00000111; //put the mode we chose in the variable "State"
+	State=State&0B00000111; //put the mode we chose in the variable "State"
    Select(State);   
   }   
  } 
@@ -261,16 +263,16 @@ void Select(char)
 {
  switch(State)
    {
-    case(0):
+    case(1):
      Mode1();
      break;
-    case(1):
+    case(2):
      Mode2();
      break;
-    case(2):
+    case(3):
      Mode3();
      break;
-    case(3):
+    case(4):
      Mode4();
      break;
     default:
