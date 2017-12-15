@@ -38,10 +38,10 @@ octal switch(input)
 // The variable RC0 could have equally been used
  static bit greenButton @ PORTBIT(PORTC,0);
  static bit redButton @ PORTBIT(PORTC,1);
- static bit UniH @ PORTBIT(PORTB,4); //the horizontal interrupter of the unipolar stepper
- static bit UniV @ PORTBIT(PORTB,5); //the vertical interrupter of the unipolar stepper
- static bit BiV  @ PORTBIT(PORTB,6); //the vertical interrupter of the bipolar stepper
- static bit BiH @ PORTBIT(PORTB,7); //the horizontal interrupter of the bipolar stepper
+ static bit UniH @ PORTBIT(PORTC,4); //the horizontal interrupter of the unipolar stepper
+ static bit UniV @ PORTBIT(PORTC,5); //the vertical interrupter of the unipolar stepper
+ static bit BiV  @ PORTBIT(PORTC,6); //the vertical interrupter of the bipolar stepper
+ static bit BiH @ PORTBIT(PORTC,7); //the horizontal interrupter of the bipolar stepper
  
  
  char  i,Temp; // Variable for delay loop 
