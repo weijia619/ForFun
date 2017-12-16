@@ -386,7 +386,7 @@ void UniCCWBiCW(void)
 }
 void Both2H_UniCWBiCCW(void)
 {
- while (UniH&&BiH == 0)
+ while (UniH != 0|BiH != 0)
  {
   if(UniH == 0){UniCW();}  
   if(BiH == 0){BiCCW();}
