@@ -44,6 +44,7 @@ octal switch(input)
  static bit BiH @ PORTBIT(PORTC,7); //the horizontal interrupter of the bipolar stepper
  
  
+ 
  char  i,Temp; // Variable for delay loop 
  char State; //State is a variable for holding the state of the program
 /*********mode*******/ 
@@ -128,7 +129,7 @@ void main (void)
 void Mode1(void)
 {
  int Count,RealCount;
- PORTB=0B00000001;//make the LEDs show mode 1???
+ PORTB=0B00000001;//make the LEDs show mode 1
  
  Both2H_UniCWBiCCW();//make the both motors to the horizontal position
  
@@ -281,46 +282,62 @@ void Select(char)
 }
 void UniCW(void)
 {
- PORTD=0B00000011;
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000011;
  delay(30);
- PORTD=0B00000110;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00000110;
  delay(30);
- PORTD=0B00001100;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00001100;
  delay(30);
- PORTD=0B00001001;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00001001;
  delay(30);
 }
 void UniCCW(void)
 {
- PORTD=0B00001001;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00001001;
  delay(30);
- PORTD=0B00001100;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00001100;
  delay(30);
- PORTD=0B00000110;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00000110;
  delay(30);
- PORTD=0B00000011;
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00000011;
  delay(30);
 }
 void BiCW(void)
 {
- PORTD=0B00000000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00000000;
  delay(30);
- PORTD=0B00010000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00010000;
  delay(30);
- PORTD=0B01010000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01010000;
  delay(30);
- PORTD=0B01000000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01000000;
  delay(30);
 }
 void BiCCW(void)
 {
- PORTD=0B01000000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01000000;
  delay(30);
- PORTD=0B01010000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01010000;
  delay(30);
- PORTD=0B00010000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00010000;
  delay(30);
- PORTD=0B00000000;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00000000;
  delay(30);
 }
 void UniCWBiCW(void)
@@ -468,7 +485,7 @@ void SetupDelay(void) // Delay loop
 {
  for (Temp=1; Temp > 0; Temp--) {} // 17 us delay
 }
-void initAtoD(void) // Initialize A/D
+/*void initAtoD(void) // Initialize A/D
 {
  ADCON1 = 0b00000100; // RA0,RA1,RA3 analog inputs, rest digital
  ADCON0 = 0b01000001; // Select 8* oscillator, analog input 0, turn on
@@ -480,7 +497,7 @@ char A2D(void)
  while(GO == 1){} // Wait here until A/D conversion is done
  while(GO == 1){} // Make sure A/D has finished
  return ADRESH;
-}
+}*/
 void Error(char State)
 {
  PORTB=State+0B00001000;
