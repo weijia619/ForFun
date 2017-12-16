@@ -1,9 +1,8 @@
 #include <xc.h>
 #include <pic.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <time.h>
  #pragma config FOSC=HS, CP=OFF, DEBUG=OFF, BORV=20, BOREN=0, MCLRE=ON, PWRTE=ON, WDTE=OFF
  #pragma config BORSEN=OFF, IESO=OFF, FCMEN=0
 /* Note: the format for the CONFIG directive starts with a double underscore.
@@ -45,8 +44,9 @@ octal switch(input)
  
  
  
- char  i,Temp; // Variable for delay loop 
- char State; //State is a variable for holding the state of the program
+ unsigned char  Temp; // Variable for delay loop 
+ int i;
+ unsigned char State; //State is a variable for holding the state of the program
 /*********mode*******/ 
  void Select(char);
  void Mode1(void);
@@ -109,8 +109,8 @@ void main (void)
  
  ADCON1= 0B00001010;
  
-
- 
+ //Both2H_UniCWBiCCW();
+ PORTB = 0b11111111;     // TEST TEST TEST TES TES TES TES TEST 
  while(1) // Infinite loop
  {
   if(greenButton == 1) // If green press
@@ -118,7 +118,7 @@ void main (void)
    while(greenButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
    State = ~PORTE;
-	State=State&0B00000111; //put the mode we chose in the variable "State"
+ State=State&0B00000111; //put the mode we chose in the variable "State"
    Select(State);   
   }   
  } 
@@ -145,25 +145,25 @@ void Mode1(void)
    Count++;
    RealCount = Count%4;//get the remainder of Count/4
   
-   if(RealCount == 0)
+   if(RealCount == 1)
    {
     while(UniV != 1){UniCCW();}
     //the unipolar motor will move counterclockwise (the shortest path) to the vertical interrupter and stop    
    }
   
-   if(RealCount == 1)
+   if(RealCount == 2)
    {
     while(BiV != 1){BiCW();}
     //the bipolar motor will move clockwise (the shortest path) to the vertical interrupter and stop
    }
   
-   if(RealCount == 2)
+   if(RealCount == 3)
    {
     while(UniH != 1){UniCW();}
     // the unipolar motor will move clockwise to the horizontal interrupter and stop
    }
  
-   if(RealCount == 3)
+   if(RealCount == 0)
    {
     while(BiH != 1){BiCCW();}
     //the bipolar motor will move counterclockwise to the horizontal interrupter and stop
@@ -191,7 +191,6 @@ void Mode2(void)
    //delay(30);
    
    Both2V_UniCCWBiCW(); //make the both motors to the vertical position
-
  
    Both2H_UniCWBiCCW(); //make the both motors to the horizontal position
    
@@ -259,7 +258,6 @@ void Mode4(void)
   }    
  } 
 }
-
 void Select(char)
 {
  switch(State)
@@ -384,36 +382,36 @@ void UniCCWBiCW(void)
  PORTD=0B01000011;
  delay(30);
 }
-void Both2H_UniCWBiCCW(void)
+ void Both2H_UniCWBiCCW(void)
 {
- while (UniH != 0|BiH != 0)
+ while ((UniH!=1 )||(BiH != 1))
  {
-  if(UniH == 0){UniCW();}  
-  if(BiH == 0){BiCCW();}
+  if(UniH != 1){UniCW();}  
+  if(BiH != 1){BiCCW();}
  }
 }
 void Both2V_UniCCWBiCW(void)
 {
- while (UniV&&BiV == 0)
+ while ((UniV!=1 )||(BiV != 1))
  {
-  if(UniV == 0){UniCCW();}  
-  if(BiV == 0){BiCW();}
+  if(UniV != 1){UniCCW();}  
+  if(BiV != 1){BiCW();}
  }
 }
 void Uni2VBi2H_UniCWBiCW(void)
 {
- while(UniV&&BiH == 0)
+ while((UniV!=1 )||(BiH != 1))
  {
-  if(UniV == 0){UniCW();}  
-  if(BiH == 0){BiCW();}
+  if(UniV != 1){UniCW();}  
+  if(BiH != 1){BiCW();}
  }
 }
 void Uni2HBi2V_UniCCWBiCCW(void)
 {
- while(UniH&&BiV == 0)
+ while((UniH!=1 )||(BiV != 1))
  {
-  if(UniH == 0){UniCCW();}  
-  if(BiV == 0){BiCCW();}
+  if(UniH != 1){UniCCW();}  
+  if(BiV != 1){BiCCW();}
  }
 }
 void UniCW_wave(void)
@@ -460,7 +458,6 @@ void BiCCW_wave(void)
  PORTD=0B11000000;
  delay(30);
 }
-
 void Both2H_UniCWBiCCW_wave(void)
 {
  while (UniH&&BiH == 0)
@@ -485,39 +482,14 @@ void SetupDelay(void) // Delay loop
 {
  for (Temp=1; Temp > 0; Temp--) {} // 17 us delay
 }
-/*void initAtoD(void) // Initialize A/D
-{
- ADCON1 = 0b00000100; // RA0,RA1,RA3 analog inputs, rest digital
- ADCON0 = 0b01000001; // Select 8* oscillator, analog input 0, turn on
- SetupDelay();    // Delay a bit before starting A/D conversion
- GO = 1;     // Start A/D
-}
-char A2D(void)
-{
- while(GO == 1){} // Wait here until A/D conversion is done
- while(GO == 1){} // Make sure A/D has finished
- return ADRESH;
-}*/
 void Error(char State)
 {
  PORTB=State+0B00001000;
- //var=PORTE,0;
- //char varr=var&0B00000111+0B00001000;
- //PORTB=varr;
-/* PORTB,0 = !var;
- var=PORTE,1
- PORTB,1 = !var;
- var=PORTE,2 
- PORTB,2 = !var;  //nake the last 3 three pins of PORTB show the mode we chose
- PORTB,3 = 1;  //light the third LED for the fault*/
- while(1 != 2){}; //wait for the reset button pressed
+ while(1 != 2){} //wait for the reset button pressed
 }
 void delay(int n)
 {
- for(i=1;i<n;i++){}
+    int j;
+ for(j=1;j<2000;j++)
+ {}
 }
-/*void delay(unsigned int mseconds)
-{
- clock_t goal=mseconds+clock();
- while(goal>clock());
-}*/
