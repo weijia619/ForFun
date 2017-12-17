@@ -11,7 +11,7 @@ sets the watchdog timer off, sets the power up timer on, sets the system
 clear on (which enables the reset pin) and turns code protect off. */
 /**************************************************************
 Case Study 5
-1.PORTB
+1.PORTB(In the case study material,some pins should be connected to the sensors.But the test stand I used use PORTC to get the signal from the sensors.
 pin 0~pin 2:display the State(output)
 pin 3: fault(output)
 pin 4:-180° optical interrupter of the unipolar stepper(input)
@@ -30,7 +30,8 @@ pin 5:Ia(output)
 pin 7:Ib(output)
 4.PORTE:
 octal switch(input)
-**************************************************************/
+******************************************
+********************/
 /* Variable declarations */
 #define PORTBIT(adr,bit) ((unsigned)(&adr)*8+(bit))
 // The function PORTBIT is used to give a name to a bit on a port
@@ -42,8 +43,6 @@ octal switch(input)
  static bit BiV  @ PORTBIT(PORTC,6); //the vertical interrupter of the bipolar stepper
  static bit BiH @ PORTBIT(PORTC,7); //the horizontal interrupter of the bipolar stepper
  
- 
- 
  unsigned char  Temp; // Variable for delay loop 
  int i;
  unsigned char State; //State is a variable for holding the state of the program
@@ -53,11 +52,6 @@ octal switch(input)
  void Mode2(void);
  void Mode3(void);
  void Mode4(void);
- 
-/********A2D*********/
- /*void initAtoD(void);
- char A2D(void);
- void SetupDelay(void);*/
  
 /*******functions about the motors********/
  void UniCW(void);
@@ -74,18 +68,12 @@ octal switch(input)
  void Both2V_UniCCWBiCW(void);
  void Uni2VBi2H_UniCWBiCW(void);
  void Uni2HBi2V_UniCCWBiCCW(void);
- 
- void UniCW_wave(void);
- void BiCW_wave(void);
- void UniCCW_wave(void);
- void BiCCW_wave(void);
- 
+
  void Both2H_UniCWBiCCW_wave(void);
- void Both2V_UniCWBiCCW_wave(void);
+ void Both2V_UniCCWBiCW_wave(void);
  
 /*******************************************/
  void SwitchDelay(void);
- 
  void Error(char);
  void delay(int);
  
@@ -109,16 +97,15 @@ void main (void)
  
  ADCON1= 0B00001010;
  
- //Both2H_UniCWBiCCW();
- PORTB = 0b11111111;     // TEST TEST TEST TES TES TES TES TEST 
- while(1) // Infinite loop
+ 
+while(1) // Infinite loop
  {
   if(greenButton == 1) // If green press
   {
    while(greenButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
    State = ~PORTE;
- State=State&0B00000111; //put the mode we chose in the variable "State"
+   State=State&0B00000111; //put the mode we chose in the variable "State"
    Select(State);   
   }   
  } 
@@ -186,14 +173,10 @@ void Mode2(void)
    while(redButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
   
-   // make a step of the bipolar motor before moving the unipolar
-   //PORTD=0B01000000;
-   //delay(30);
-   
+   while(redButton != 1){
    Both2V_UniCCWBiCW(); //make the both motors to the vertical position
- 
    Both2H_UniCWBiCCW(); //make the both motors to the horizontal position
-   
+   }
    //if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
    if(redButton == 1)
    {
@@ -217,11 +200,10 @@ void Mode3(void)
   {
    while(redButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
-     
+   while(redButton != 1){
    Uni2HBi2V_UniCCWBiCCW();
-   
    Uni2VBi2H_UniCWBiCW();
-   
+  }
    //if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
    if(redButton == 1)
    {
@@ -245,10 +227,10 @@ void Mode4(void)
   {
    while(redButton == 1){} // Wait for release
    SwitchDelay(); // Let switch debounce
-   Both2V_UniCWBiCCW_wave(); //make the both motors to the vertical position by wave drive
- 
+   while(redButton != 1){
+   Both2V_UniCCWBiCW_wave(); //make the both motors to the vertical position by wave drive
    Both2H_UniCWBiCCW_wave(); //make the both motors to the horizontal position by wave drive
-   
+   }
    //if the red button is held down as the motors reach the horizontal interrupters,wait until it is released.
    if(redButton == 1)
    {
@@ -258,6 +240,7 @@ void Mode4(void)
   }    
  } 
 }
+/*******************Select**********************/
 void Select(char)
 {
  switch(State)
@@ -278,6 +261,7 @@ void Select(char)
     Error(State);
  }
 }
+/*************stepper***********************/
 void UniCW(void)
 {
  Temp = PORTD&0B11110000;
@@ -384,104 +368,179 @@ void UniCCWBiCW(void)
 }
  void Both2H_UniCWBiCCW(void)
 {
- while ((UniH!=1 )||(BiH != 1))
- {
-  if(UniH != 1){UniCW();}  
-  if(BiH != 1){BiCCW();}
- }
+ while ((UniH!=1 )&&(BiH != 1)){UniCWBiCCW();}
+ while(UniH!=1){UniCW();}
+ while(BiH!= 1){BiCCW();}
 }
 void Both2V_UniCCWBiCW(void)
 {
- while ((UniV!=1 )||(BiV != 1))
- {
-  if(UniV != 1){UniCCW();}  
-  if(BiV != 1){BiCW();}
- }
+ while ((UniV!=1 )&&(BiV != 1)){UniCCWBiCW();}
+ while(UniV!=1){UniCCW();}
+ while(BiV!= 1){BiCW();}
 }
 void Uni2VBi2H_UniCWBiCW(void)
 {
- while((UniV!=1 )||(BiH != 1))
+ 
+ while ((UniV!=1 )&&(BiH != 1)){UniCWBiCW();}
+ while(UniV!=1){UniCW();}
+ while(BiH!= 1)
  {
-  if(UniV != 1){UniCW();}  
-  if(BiH != 1){BiCW();}
- }
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00000000;
+ delay(30);
+ if(BiH == 1)break;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00010000;
+ delay(30);
+ if(BiH == 1)break;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01010000;
+ delay(30);
+ if(BiH == 1)break;
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01000000;
+ delay(30);
+ if(BiH == 1)break;
+  }
 }
 void Uni2HBi2V_UniCCWBiCCW(void)
 {
- while((UniH!=1 )||(BiV != 1))
- {
-  if(UniH != 1){UniCCW();}  
-  if(BiV != 1){BiCCW();}
- }
+ while ((UniH!=1 )&&(BiV != 1)){UniCCWBiCCW();}
+ while(UniH!=1){UniCCW();}
+ while(BiV!= 1){BiCCW();}
 }
-void UniCW_wave(void)
-{
- PORTD=0B00000001;
- delay(30);
- PORTD=0B00000010;
- delay(30);
- PORTD=0B00000100;
- delay(30);
- PORTD=0B00001000;
- delay(30);
-}
-void BiCW_wave(void)
-{
- PORTD=0B11000000;
- delay(30);
- PORTD=0B00110000;
- delay(30);
- PORTD=0B10010000;
- delay(30);
- PORTD=0B01100000;
- delay(30);
-}
-void UniCCW_wave(void)
-{
- PORTD=0B00001000;
- delay(30);
- PORTD=0B00000100;
- delay(30);
- PORTD=0B00000010;
- delay(30);
- PORTD=0B00000001;
- delay(30);
-}
-void BiCCW_wave(void)
-{
- PORTD=0B01100000;
- delay(30);
- PORTD=0B10010000;
- delay(30);
- PORTD=0B00110000;
- delay(30);
- PORTD=0B11000000;
- delay(30);
-}
+
 void Both2H_UniCWBiCCW_wave(void)
-{
- while (UniH&&BiH == 0)
- {
-  if(UniH == 0){UniCW_wave();}  
-  if(BiH == 0){BiCCW_wave();}
- }
+{while((UniH!=1)||(BiH!=1)){
+  if(UniH!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000001;
+  delay(30);}
+  
+   if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00010000;
+   delay(30);}
+  if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00100000;
+   delay(30);}
+   
+ if(UniH!=1){
+ Temp = PORTD&0B11110000;
+ PORTD=Temp|0B00000010;
+   delay(30);}
+   
+  if(BiH!= 1){
+  Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00000000;
+ delay(30);}
+  if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B11000000;
+ delay(30);}
+ 
+ if(UniH!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000100;
+ delay(30);}
+ 
+  if(BiH!= 1){
+  Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01000000;
+ delay(30);}
+ if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01110000;
+ delay(30);}
+
+  if(UniH!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00001000;
+ delay(30);}
+ 
+  if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01010000;
+  delay(30);}
+  if(BiH!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B10010000;
+  delay(30);}
 }
-void Both2V_UniCWBiCCW_wave(void)
-{
- while (UniV&&BiV == 0)
- {
-  if(UniV == 0){UniCCW_wave();}  
-  if(BiV == 0){BiCW_wave();}
- }
 }
+
+ void Both2V_UniCCWBiCW_wave(void)
+{while((UniV!=1)||(BiV!=1)){
+  if(UniV!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00001000;
+  delay(30);}
+   if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01010000;
+   delay(30);}
+  if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01100000;
+   delay(30);}
+
+  if(UniV!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000100;
+  delay(30);}
+  
+  if(BiV!= 1){
+  Temp = PORTD&0B00001111;
+ PORTD=Temp|0B01000000;
+ delay(30);}
+  if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B10000000;
+ delay(30);}
+
+   if(UniV!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000010;
+  delay(30);}
+  
+  if(BiV!= 1){
+  Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00000000;
+ delay(30);}
+ if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00110000;
+ delay(30);}
+
+   if(UniV!=1){
+ Temp = PORTD&0B11110000;
+ PORTD = Temp|0B00000001;
+  delay(30);}
+  
+  if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B00010000;
+  delay(30);}
+  if(BiV!= 1){
+ Temp = PORTD&0B00001111;
+ PORTD=Temp|0B11010000;
+  delay(30);}
+}
+}
+/***********************delays******************************/
 void SwitchDelay (void)  // Waits for switch debounce
 {
  for (i=200; i > 0; i--) {}  // 1200 us delay
 }
-void SetupDelay(void) // Delay loop
+
+void delay(int n)
 {
- for (Temp=1; Temp > 0; Temp--) {} // 17 us delay
+    int j;
+ for(j=1;j<2000;j++)
+ {}
 }
+/*************************Error*****************************/
 void Error(char State)
 {
  PORTB=State+0B00001000;
@@ -490,6 +549,5 @@ void Error(char State)
 void delay(int n)
 {
     int j;
- for(j=1;j<2000;j++)
- {}
+ for(j=1;j<2000;j++){}
 }
